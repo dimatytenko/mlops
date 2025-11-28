@@ -1,0 +1,33 @@
+# Dockerfile.slim
+# ===== STAGE 1: Builder (install everything, build model) =====
+FROM python:3.10-slim AS builder
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+WORKDIR /app
+
+# System dependencies (minimum for PyTorch wheels)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY export_model.py ./
+RUN python export_model.py --model mobilenet_v2 --out /app/model.pt
+
+# ===== STAGE 2: Runtime (only necessary files) =====
+FROM python:3.10-slim AS runtime
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+WORKDIR /app
+
+# Copy only installed packages from builder (site-packages)
+# IMPORTANT: path must match the version of the base Python image
+COPY --from=builder /usr/local/lib/python3.10/site-packages/ /usr/local/lib/python3.10/site-packages/
+# (Optional) if something is installed in dist-packages:
+# COPY --from=builder /usr/local/lib/python3.10/dist-packages/ /usr/local/lib/python3.10/dist-packages/
+
+# Copy only inference script, model and labels
+COPY inference.py imagenet_class_index.json ./
+COPY --from=builder /app/model.pt ./model.pt
+
+ENTRYPOINT ["python", "inference.py"]
