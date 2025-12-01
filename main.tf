@@ -13,11 +13,9 @@ terraform {
   }
 }
 
-
-# ALERT: provider in root can not be declared,
-# because it is already defined inside the vpc/ and eks/ modules.
-# If you want to declare it here, then remove the provider from the modules.
-# provider "aws" { region = var.region }
+provider "aws" {
+  region = var.region
+}
 
 # 1 First create VPC
 module "vpc" {
@@ -42,7 +40,7 @@ module "eks" {
   region           = var.region
 
   # disable remote_state and pass the values from module.vpc
- 
+
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnet_ids
 
@@ -50,6 +48,12 @@ module "eks" {
   cpu_min_size      = var.cpu_min_size
   cpu_desired_size  = var.cpu_desired_size
   cpu_max_size      = var.cpu_max_size
+
+  gpu_instance_type = var.gpu_instance_type
+  gpu_capacity_type = var.gpu_capacity_type
+  gpu_min_size      = var.gpu_min_size
+  gpu_desired_size  = var.gpu_desired_size
+  gpu_max_size      = var.gpu_max_size
 
   tags = var.tags
 }

@@ -2,21 +2,6 @@
 # vpc/main.tf
 ########################################
 
-terraform {
-  required_version = ">= 1.5.0"
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.63"
-    }
-  }
-}
-
-provider "aws" {
-  region = var.region
-}
-
 data "aws_availability_zones" "available" {
   state = "available"
 }

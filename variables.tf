@@ -56,9 +56,9 @@ variable "cluster_version" {
 }
 
 variable "cpu_instance_type" {
-  description = "Instance type for CPU node group"
+  description = "Instance type for CPU node group (Free Tier: t2.micro or t3.micro)"
   type        = string
-  default     = "t3.small"
+  default     = "t3.micro"
 }
 
 variable "cpu_min_size" {
@@ -77,6 +77,37 @@ variable "cpu_max_size" {
   description = "Max size of the CPU node group"
   type        = number
   default     = 4
+}
+
+# ------- GPU Node Group -------
+variable "gpu_instance_type" {
+  description = "Instance type for GPU node group (Free Tier: t2.micro or t3.micro)"
+  type        = string
+  default     = "t3.micro"
+}
+
+variable "gpu_capacity_type" {
+  description = "Capacity type for GPU node group (ON_DEMAND or SPOT)"
+  type        = string
+  default     = "SPOT"
+}
+
+variable "gpu_min_size" {
+  description = "Min size of the GPU node group"
+  type        = number
+  default     = 0
+}
+
+variable "gpu_desired_size" {
+  description = "Desired size of the GPU node group"
+  type        = number
+  default     = 0
+}
+
+variable "gpu_max_size" {
+  description = "Max size of the GPU node group"
+  type        = number
+  default     = 3
 }
 
 # ------- Tags (optional common) -------
