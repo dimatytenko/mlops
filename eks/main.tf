@@ -1,22 +1,8 @@
 ########################################
-# eks/main.tf (root-mode, minimal)
+# eks/main.tf (pure child module)
 ########################################
 
-# Get VPC data from remote state (if VPC was created separately)
-# Fallback to variables if remote state is not available
-data "terraform_remote_state" "vpc" {
-  backend = "local"
-  
-  config = {
-    path = "${path.root}/vpc/terraform.tfstate"
-  }
-}
 
-# Use remote state if available, otherwise use variables
-locals {
-  vpc_id             = try(data.terraform_remote_state.vpc.outputs.vpc_id, var.vpc_id)
-  private_subnet_ids = try(data.terraform_remote_state.vpc.outputs.private_subnet_ids, var.private_subnet_ids)
-}
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
@@ -31,9 +17,9 @@ module "eks" {
   # Give the creator of the cluster (your current AWS IAM principal) cluster-admin permissions   
   enable_cluster_creator_admin_permissions = true
 
-  # Networking (from remote state or variables)
-  vpc_id     = local.vpc_id
-  subnet_ids = local.private_subnet_ids
+
+  vpc_id     = var.vpc_id
+  subnet_ids = var.private_subnet_ids
 
   # Node groups: CPU and GPU (for Free Tier using t3.micro, but labeled for GPU tasks)
   eks_managed_node_groups = {

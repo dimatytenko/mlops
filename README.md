@@ -12,7 +12,6 @@ The infrastructure uses official Terraform modules:
   - `cpu-ng` → `t3.micro` (Free Tier), **ON_DEMAND**, labeled for CPU workloads
   - `gpu-ng` → `t3.micro` (Free Tier), **SPOT**, labeled for GPU workloads
 - **IRSA** enabled for future integration of IAM Roles for Service Accounts
-- EKS module connects to VPC using `terraform_remote_state` data source
 - Provider configuration only in root module (modules inherit it)
 
 ---
@@ -32,7 +31,7 @@ The infrastructure uses official Terraform modules:
     │   ├── terraform.tf     # Terraform version
     │   └── backend.tf       # Backend configuration
     ├── eks/                 # EKS module
-    │   ├── main.tf          # EKS module with terraform_remote_state
+    │   ├── main.tf          # Чистий child-модуль, без terraform_remote_state
     │   ├── variables.tf     # EKS input parameters
     │   ├── outputs.tf       # EKS outputs (cluster info)
     │   ├── terraform.tf     # Terraform version
@@ -95,10 +94,10 @@ The infrastructure uses official Terraform modules:
 
 - **VPC Module**: Creates VPC with public and private subnets using `terraform-aws-modules/vpc/aws`
 - **EKS Module**: Creates EKS cluster with 2 node groups (CPU and GPU) using `terraform-aws-modules/eks/aws`
-  - Connects to VPC via `data.terraform_remote_state` (with fallback to variables)
-  - Both node groups use Free Tier instance types (`t3.micro`)
-  - Node groups have labels for workload type (cpu/gpu)
-- **Root Module**: Orchestrates both modules and provides unified interface
+  - Підключається до VPC **виключно через input variables**: `vpc_id` та `private_subnet_ids`
+  - Обидві node-групи використовують Free Tier instance types (`t3.micro`)
+  - Node групи мають labels для workload type (cpu/gpu)
+- **Root Module**: Оркеструє обидва модулі, зʼєднує `module.vpc` та `module.eks` і надає єдиний інтерфейс
 
 ## Notes
 
@@ -109,3 +108,17 @@ The infrastructure uses official Terraform modules:
 - Node groups are labeled: `workload-type=cpu` and `workload-type=gpu` for easy pod scheduling
 - Default region: `eu-central-1`
 - Default cluster name: `goit-eks-cluster`
+
+---
+
+## Example output of `aws eks update-kubeconfig` and `kubectl get nodes`
+
+```bash
+$ aws eks --region eu-central-1 update-kubeconfig --name goit-eks-cluster
+Added new context arn:aws:eks:eu-central-1:123456789012:cluster/goit-eks-cluster to C:\Users\user\.kube\config
+
+$ kubectl get nodes
+NAME                                           STATUS   ROLES    AGE   VERSION
+ip-10-42-1-23.eu-central-1.compute.internal   Ready    <none>   10m   v1.29.0-eks-1234567
+ip-10-42-2-47.eu-central-1.compute.internal   Ready    <none>   10m   v1.29.0-eks-1234567
+```
