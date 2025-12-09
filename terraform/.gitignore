@@ -1,0 +1,15 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+.terraform.lock.hcl
+terraform-argocd.tfstate
+
+# MacOS
+.DS_Store
+*/.DS_Store
+
+# Python venv
+venv/
+*/venv/
