@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: minio
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: mlflow
+  source:
+    repoURL: https://charts.bitnami.com/bitnami
+    chart: minio
+    targetRevision: 13.7.2
+    helm:
+      values: |
+        mode: standalone
+        auth:
+          rootUser: mlflow
+          rootPassword: mlflow-secret
+        defaultBuckets: mlflow-artifacts
+        service:
+          type: ClusterIP
+        persistence:
+          enabled: true
+          size: 10Gi
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+
