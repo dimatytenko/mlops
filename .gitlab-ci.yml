@@ -3,9 +3,14 @@ stages:
 
 train-model:
   stage: train
-  image: amazon/aws-cli:2.15.0
+  image: python:3.11
+  before_script:
+    - pip install awscli
   script:
-    - aws stepfunctions start-execution \
+    - echo "🚀 Starting ML pipeline via Step Function"
+    - |
+      aws stepfunctions start-execution \
+        --region "$AWS_DEFAULT_REGION" \
         --state-machine-arn "$STATE_MACHINE_ARN" \
         --name "train-$(date +%s)" \
         --input "{\"source\":\"gitlab-ci\",\"commit\":\"$CI_COMMIT_SHORT_SHA\"}"
