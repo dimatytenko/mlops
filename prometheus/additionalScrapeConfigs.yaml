@@ -1,0 +1,15 @@
+# Додатковий scrape для подів із /metrics
+- job_name: 'inference-api'
+  kubernetes_sd_configs:
+    - role: pod
+  relabel_configs:
+    - source_labels: [__meta_kubernetes_pod_label_app]
+      action: keep
+      regex: inference-api
+    - source_labels: [__meta_kubernetes_pod_container_port_number]
+      action: keep
+      regex: "8080"
+  metrics_path: /metrics
+  scheme: http
+  scrape_interval: 15s
+  scrape_timeout: 10s

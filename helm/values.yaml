@@ -1,0 +1,57 @@
+image:
+  repository: 019959575513.dkr.ecr.us-east-1.amazonaws.com/inference-api
+  tag: latest
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+  name: inference-api
+
+env:
+  MLFLOW_TRACKING_URI: http://mlflow.application.svc.cluster.local:5000
+  MODEL_NAME: iris_rf_model
+  MODEL_STAGE: Production
+  DRIFT_ENABLED: "true"
+  GITLAB_WEBHOOK_URL: ""  # Наприклад: https://gitlab.com/api/v4/projects/PROJECT_ID/trigger/pipeline
+  GITLAB_TOKEN: ""  # GitLab token для webhook
+
+envFromSecret: mlflow-secrets # містить AWS_ACCESS_KEY_ID/SECRET + MLFLOW_S3_ENDPOINT_URL тощо
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 15
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+podAnnotations: {}
+podLabels:
+  app: inference-api
+
+serviceAccount:
+  create: false
+  name: ""
+
+metrics:
+  enabled: true
+  path: /metrics
+  port: 8080

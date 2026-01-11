@@ -1,0 +1,63 @@
+{
+  "title": "Inference Service Overview",
+  "timezone": "browser",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Requests / min",
+      "targets": [
+        {
+          "expr": "sum(rate(inference_requests_total{endpoint=\"/predict\"}[1m]))",
+          "legendFormat": "req/min"
+        }
+      ],
+      "id": 1
+    },
+    {
+      "type": "graph",
+      "title": "Latency p95",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(inference_latency_seconds_bucket{endpoint=\"/predict\"}[5m])) by (le))",
+          "legendFormat": "p95"
+        }
+      ],
+      "id": 2
+    },
+    {
+      "type": "stat",
+      "title": "Errors / min",
+      "targets": [
+        {
+          "expr": "sum(rate(inference_errors_total[1m]))",
+          "legendFormat": "errors"
+        }
+      ],
+      "id": 3
+    },
+    {
+      "type": "stat",
+      "title": "Drift events (total)",
+      "targets": [
+        {
+          "expr": "sum(inference_drift_detected_total)",
+          "legendFormat": "drift_count"
+        }
+      ],
+      "id": 4
+    },
+    {
+      "type": "graph",
+      "title": "Drift detection rate",
+      "targets": [
+        {
+          "expr": "sum(rate(inference_drift_detected_total[5m]))",
+          "legendFormat": "drift/min"
+        }
+      ],
+      "id": 5
+    }
+  ],
+  "schemaVersion": 36,
+  "version": 1
+}
